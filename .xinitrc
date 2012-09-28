@@ -2,3 +2,4 @@
  xsetroot -cursor_name left_ptr
   # start xmonad
  xmonad
+ibus-daemon -d --xim
