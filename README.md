@@ -10,3 +10,4 @@ Installation
 
 * yaourt vundle
 * yaourt vim-latex-suite
+* yaourt vimproc

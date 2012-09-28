@@ -6,8 +6,6 @@ set number
 set smartindent
 set cindent
 set fileencodings=utf8,cp936
-syntax on
-filetype on
 "---for vundle
 "filetype off
 set nocompatible
@@ -31,12 +29,16 @@ Bundle 'liuexp/vim-snipmate'
 Bundle 'liuexp/snipmate-snippets'
 Bundle 'liuexp/Cpp11-Syntax-Support'
 Bundle 'Shougo/neocomplcache'
+Bundle 'ujihisa/neco-ghc'
+Bundle 'derekwyatt/vim-scala'
 " Pick either python-mode or pyflakes & pydoc
 Bundle 'klen/python-mode'
 Bundle 'python.vim'
 Bundle 'python_match.vim'
 Bundle 'pythoncomplete'
 "--end of vundle
+syntax on
+filetype on
 
 " Source support_function.vim to support snipmate-snippets.
 if filereadable(expand("~/.vim/bundle/snipmate-snippets/snippets/support_functions.vim"))
@@ -79,13 +81,13 @@ let g:tex_flavor = "latex"
 :noremap <C-left> :bprev<CR> 
 :noremap <C-right> :bnext<CR> 
 
-" haskell
-au Bufenter *.hs compiler ghc
-let g:haddock_browser = "chromium"
-if &filetype=="haskell"
-	set expandtab
-	"set ts=8
-endif
+"" haskell
+"au Bufenter *.hs compiler ghc
+"let g:haddock_browser = "chromium"
+"if &filetype=="haskell"
+"	set expandtab
+"	"set ts=8
+"endif
 
 " default macro
 map <F9> :call Compile()<CR>
