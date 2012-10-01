@@ -1,0 +1,10 @@
+[user]
+	email = liuexp@gmail.com
+	name = Jingcheng Liu
+[core]
+	editor = vim
+	excludesfile = ~/.gitignore.global
+[color]
+	ui = true
+[merge]
+	tool = vimdiff
