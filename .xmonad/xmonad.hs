@@ -12,6 +12,12 @@ import Data.Monoid
 import System.Exit
 import XMonad.Config.Desktop
 
+import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.ManageDocks
+import XMonad.Util.Run(spawnPipe)
+import XMonad.Util.EZConfig(additionalKeys)
+import System.IO
+
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 
@@ -44,7 +50,7 @@ myModMask       = mod4Mask
 --
 -- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
 --
-myWorkspaces    = ["1","2","3","4","5","6","7","8","9"]
+myWorkspaces    = ["1:web","2:code","3:work","4:util","5:system","6","7","8","9"]
 
 -- Border colors for unfocused and focused windows, respectively.
 --
@@ -60,7 +66,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     [ ((modm , xK_Return), spawn $ XMonad.terminal conf)
 
     -- launch dmenu
-    , ((modm,               xK_r     ), spawn "dmenu_run")
+    , ((modm,               xK_r     ), spawn "exe=`yeganesh -x -- -p '>'` && eval \"exec $exe\"")
     
     -- close focused window
     , ((modm .|. shiftMask, xK_c     ), kill)
@@ -114,13 +120,16 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- Use this binding with avoidStruts from Hooks.ManageDocks.
     -- See also the statusBar function from Hooks.DynamicLog.
     --
-    -- , ((modm              , xK_b     ), sendMessage ToggleStruts)
+     , ((modm              , xK_b     ), sendMessage ToggleStruts)
+     , ((modm .|. shiftMask, xK_l     ), spawn "xscreensaver-command -lock")
 
     -- Quit xmonad
     , ((modm .|. shiftMask, xK_q     ), io (exitWith ExitSuccess))
 
     -- Restart xmonad
     , ((modm              , xK_q     ), spawn "xmonad --recompile; xmonad --restart")
+    , ((0, xK_Print), spawn "scrot")
+    , ((controlMask, xK_Print), spawn "sleep 0.2; scrot -s")
     ]
     ++
 
@@ -224,8 +233,7 @@ myEventHook = mempty
 -- Perform an arbitrary action on each internal state change or X event.
 -- See the 'XMonad.Hooks.DynamicLog' extension for examples.
 --
-myLogHook = return ()
-
+--myLogHook = return ()
 ------------------------------------------------------------------------
 -- Startup hook
 
@@ -241,7 +249,15 @@ myStartupHook = return ()
 
 -- Run xmonad with the settings you specify. No need to modify this.
 --
-main = xmonad defaults
+main = do
+		xmproc <- spawnPipe "/usr/bin/xmobar /home/liuexp/.xmobarrc"
+		xmonad $ defaults
+			{ logHook = dynamicLogWithPP xmobarPP  
+	         		  { ppOutput = hPutStrLn xmproc  
+	         		  , ppTitle = xmobarColor "green" "" . shorten 50   
+	         		  , ppLayout = const "" -- to disable the layout info on xmobar  
+	         		  }   
+		}
 --main = xmonad desktopConfig
 
 -- A structure containing your configuration settings, overriding
@@ -266,9 +282,11 @@ defaults = desktopConfig {
         mouseBindings      = myMouseBindings,
 
       -- hooks, layouts
-        layoutHook         = myLayout ||| layoutHook desktopConfig,
-        manageHook         = myManageHook<+> manageHook desktopConfig,
+        layoutHook         = avoidStruts $ myLayout ||| layoutHook desktopConfig,
+        manageHook         = 	myManageHook <+> 
+				manageHook desktopConfig <+> 
+				manageDocks,
         handleEventHook    = myEventHook,
-        logHook            = myLogHook,
+ --       logHook            = myLogHook,
         startupHook        = myStartupHook
     }
