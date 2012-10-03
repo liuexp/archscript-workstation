@@ -6,6 +6,7 @@
 [[ $- != *i* ]] && return
 
 alias l='ls -a'
+alias ll='ls -la'
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias :r='make'
@@ -14,7 +15,8 @@ alias :q='exit'
 alias :ga='git add .'
 alias :gc='git commit -a $*'
 alias :gca='git commit -a $*'
-alias :gp='git push'
+alias :gp='git push $*'
+alias :gs='git status -u $*'
 alias :o='xdg-open $*'
 PS1='[\u@\h \W]\$ '
 

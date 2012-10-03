@@ -17,9 +17,12 @@ import XMonad.Hooks.ManageDocks
 import XMonad.Util.Run(spawnPipe)
 import XMonad.Util.EZConfig(additionalKeys)
 import System.IO
+import XMonad.Hooks.SetWMName
 
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
+
+import Codec.Binary.UTF8.String(utf8Encode)
 
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
@@ -33,23 +36,7 @@ myFocusFollowsMouse = True
 -- Width of the window border in pixels.
 --
 myBorderWidth   = 1
-
--- modMask lets you specify which modkey you want to use. The default
--- is mod1Mask ("left alt").  You may also consider using mod3Mask
--- ("right alt"), which does not conflict with emacs keybindings. The
--- "windows key" is usually mod4Mask.
---
 myModMask       = mod4Mask
-
--- The default number of workspaces (virtual screens) and their names.
--- By default we use numeric strings, but any string may be used as a
--- workspace name. The number of workspaces is determined by the length
--- of this list.
---
--- A tagging example:
---
--- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
---
 myWorkspaces    = ["1:web","2:code","3:work","4:util","5:system","6","7","8","9"]
 
 -- Border colors for unfocused and focused windows, respectively.
@@ -116,15 +103,11 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- Deincrement the number of windows in the master area
     , ((modm              , xK_period), sendMessage (IncMasterN (-1)))
 
-    -- Toggle the status bar gap
-    -- Use this binding with avoidStruts from Hooks.ManageDocks.
-    -- See also the statusBar function from Hooks.DynamicLog.
-    --
      , ((modm              , xK_b     ), sendMessage ToggleStruts)
      , ((modm .|. shiftMask, xK_l     ), spawn "xscreensaver-command -lock")
 
     -- Quit xmonad
-    , ((modm .|. shiftMask, xK_q     ), io (exitWith ExitSuccess))
+    , ((modm .|. shiftMask, xK_q     ), io exitSuccess)
 
     -- Restart xmonad
     , ((modm              , xK_q     ), spawn "xmonad --recompile; xmonad --restart")
@@ -140,16 +123,6 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     [((m .|. modm, k), windows $ f i)
         | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_9]
         , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]]
---    ++
-
-    --
-    -- mod-{w,e,r}, Switch to physical/Xinerama screens 1, 2, or 3
-    -- mod-shift-{w,e,r}, Move client to screen 1, 2, or 3
-    --
---    [((m .|. modm, key), screenWorkspace sc >>= flip whenJust (windows . f))
---        | (key, sc) <- zip [xK_w, xK_e, xK_r] [0..]
---        , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
-
 
 ------------------------------------------------------------------------
 -- Mouse bindings: default actions bound to mouse events
@@ -242,7 +215,7 @@ myEventHook = mempty
 -- per-workspace layout choices.
 --
 -- By default, do nothing.
-myStartupHook = return ()
+myStartupHook = setWMName "LG3D"
 
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
@@ -253,8 +226,8 @@ main = do
 		xmproc <- spawnPipe "/usr/bin/xmobar /home/liuexp/.xmobarrc"
 		xmonad $ defaults
 			{ logHook = dynamicLogWithPP xmobarPP  
-	         		  { ppOutput = hPutStrLn xmproc  
-	         		  , ppTitle = xmobarColor "green" "" . shorten 50   
+	         		  { ppOutput = hPutStrLn xmproc . utf8Encode
+	         		  , ppTitle = xmobarColor "green" "#444444" . shorten 93   
 	         		  , ppLayout = const "" -- to disable the layout info on xmobar  
 	         		  }   
 		}
@@ -290,3 +263,4 @@ defaults = desktopConfig {
  --       logHook            = myLogHook,
         startupHook        = myStartupHook
     }
+

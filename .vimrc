@@ -31,6 +31,7 @@ Bundle 'liuexp/Cpp11-Syntax-Support'
 Bundle 'Shougo/neocomplcache'
 Bundle 'ujihisa/neco-ghc'
 Bundle 'derekwyatt/vim-scala'
+Bundle 'Lokaltog/vim-powerline'
 " Pick either python-mode or pyflakes & pydoc
 Bundle 'klen/python-mode'
 Bundle 'python.vim'
@@ -39,6 +40,9 @@ Bundle 'pythoncomplete'
 "--end of vundle
 syntax on
 filetype on
+
+set guifont=Monaco\ for\ Powerline
+let g:Powerline_symbols = 'fancy'
 
 " Source support_function.vim to support snipmate-snippets.
 if filereadable(expand("~/.vim/bundle/snipmate-snippets/snippets/support_functions.vim"))
