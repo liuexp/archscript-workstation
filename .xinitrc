@@ -54,11 +54,13 @@ fi
 
  trayer --edge top --align right --SetDockType true --SetPartialStrut true \
 	  --expand true --width 9  --transparent true --tint 0x444444 --alpha 0 --distance 0 --padding 0 --height 19 &
+ xsetroot -cursor_name left_ptr
  xscreensaver -no-splash &
  xset -b
  if [ -x /usr/bin/nm-applet ] ; then
     nm-applet --sm-disable &
  fi
+ nitrogen --restore
 # /usr/lib/gnome-settings-daemon/gnome-settings-daemon &
 /usr/lib/xfce4/notifyd/xfce4-notifyd &
  gnome-sound-applet &
