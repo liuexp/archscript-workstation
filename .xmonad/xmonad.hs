@@ -1,28 +1,30 @@
---
--- xmonad example config file.
---
--- A template showing all available configuration hooks,
--- and how to override the defaults in your own xmonad.hs conf file.
---
--- Normally, you'd only override those defaults you care about.
---
-
 import XMonad
 import Data.Monoid
 import System.Exit
 import XMonad.Config.Desktop
 
-import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.DynamicLog		(dynamicLogWithPP,xmobarPP,xmobarColor,shorten,ppOutput,ppLayout,ppTitle,wrap,ppCurrent)
 import XMonad.Hooks.ManageDocks
-import XMonad.Util.Run(spawnPipe)
-import XMonad.Util.EZConfig(additionalKeys)
-import System.IO
-import XMonad.Hooks.SetWMName
+import XMonad.Hooks.ManageHelpers	(isDialog, isFullscreen, doCenterFloat, doFullFloat)
+import XMonad.Layout.Fullscreen		(fullscreenEventHook,fullscreenManageHook)
+import XMonad.Prompt			(defaultXPConfig)
+import XMonad.Prompt.XMonad		(xmonadPrompt)
+import XMonad.Prompt.AppendFile		(appendFilePrompt)
+import XMonad.Prompt.RunOrRaise		(runOrRaisePrompt)
+
+import XMonad.Util.Run			(spawnPipe)
+import System.IO			(hPutStrLn)
+import XMonad.Hooks.SetWMName		(setWMName)
+import XMonad.Actions.CycleWS		(prevWS,nextWS,shiftToNext,shiftToPrev)
+import XMonad.Layout.NoBorders		(smartBorders)
+import XMonad.Layout.Grid
+import Graphics.X11.ExtraTypes.XF86
 
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 
-import Codec.Binary.UTF8.String(utf8Encode)
+import Codec.Binary.UTF8.String		(utf8Encode)
+import Control.Applicative		((<$>),(<*>),pure)
 
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
@@ -43,6 +45,9 @@ myWorkspaces    = ["1:web","2:code","3:work","4:util","5:system","6","7","8","9"
 --
 myNormalBorderColor  = "#dddddd"
 myFocusedBorderColor = "#ff0000"
+noteFile = "/home/liuexp/NOTE"
+colorOrange          = "#ff7701"
+colorDarkGray        = "#171717"
 
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
@@ -68,6 +73,9 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm,               xK_n     ), refresh)
 
     -- Move focus to the next window
+    , ((modm .|. shiftMask, xK_Tab   ), windows W.focusUp)
+
+    -- Move focus to the next window
     , ((modm,               xK_Tab   ), windows W.focusDown)
 
     -- Move focus to the next window
@@ -76,11 +84,11 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- Move focus to the previous window
     , ((modm,               xK_k     ), windows W.focusUp  )
 
-    -- Move focus to the master window
-    , ((modm,               xK_m     ), windows W.focusMaster  )
+    -- Make current window fullscreen
+    , ((modm,               xK_m     ), withFocused $ \f -> windows =<< appEndo <$> runQuery doFullFloat f )
 
-    -- Swap the focused window and the master window
-    --, ((modm,               xK_Return), windows W.swapMaster)
+    -- Swap the focused window to master
+    , ((modm .|. shiftMask, xK_m     ), windows W.swapMaster  )
 
     -- Swap the focused window with the next window
     , ((modm .|. shiftMask, xK_j     ), windows W.swapDown  )
@@ -111,8 +119,27 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- Restart xmonad
     , ((modm              , xK_q     ), spawn "xmonad --recompile; xmonad --restart")
+
+    , ((modm,               xK_Right ), nextWS)
+    , ((modm,               xK_Left  ), prevWS)
+    , ((modm .|. shiftMask, xK_Right ), shiftToNext)
+    , ((modm .|. shiftMask, xK_Left  ), shiftToPrev)
     , ((0, xK_Print), spawn "scrot")
     , ((controlMask, xK_Print), spawn "sleep 0.2; scrot -s")
+    , ((modm		, xK_p), runOrRaisePrompt defaultXPConfig)
+    , ((modm .|. shiftMask, xK_n), spawn ("date>> "++noteFile) 
+    					>> appendFilePrompt defaultXPConfig noteFile)
+    , ((modm .|. controlMask, xK_n), spawn ("notify-send \"`tail -n 10 " ++ noteFile ++ "`\""))
+    , ((modm .|. controlMask, xK_x), xmonadPrompt defaultXPConfig)
+    
+    -- Multimedia Keys
+	, ((0, xF86XK_AudioMute), spawn "amixer sset Master toggle")		                   --Mute/unmute volume
+	, ((0, xF86XK_AudioRaiseVolume), spawn "amixer set Master 2000+ unmute")       		   --Raise volume
+	, ((0, xF86XK_AudioLowerVolume), spawn "amixer set Master 2000- unmute")  	           --Lower volume
+	, ((0, xF86XK_AudioNext), spawn "ncmpcpp next")                                            --next song
+	, ((0, xF86XK_AudioPrev), spawn "ncmpcpp prev")                                            --prev song
+	, ((0, xF86XK_AudioPlay), spawn "ncmpcpp toggle")                                          --toggle song
+	, ((0, xF86XK_AudioStop), spawn "ncmpcpp stop")   
     ]
     ++
 
@@ -140,7 +167,8 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm, button3), (\w -> focus w >> mouseResizeWindow w
                                        >> windows W.shiftMaster))
 
-    -- you may also bind events to the mouse scroll wheel (button4 and button5)
+	, ((modm, button4), (\_ -> prevWS))                                                -- switch to previous workspace
+	, ((modm, button5), (\_ -> nextWS))                                                -- switch to next workspace
     ]
 
 ------------------------------------------------------------------------
@@ -154,7 +182,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = tiled ||| Mirror tiled ||| Full
+myLayout = tiled ||| Mirror tiled ||| Full ||| Grid
   where
      -- default tiling algorithm partitions the screen into two panes
      tiled   = Tall nmaster delta ratio
@@ -183,11 +211,16 @@ myLayout = tiled ||| Mirror tiled ||| Full
 -- To match on the WM_NAME, you can use 'title' in the same way that
 -- 'className' and 'resource' are used below.
 --
-myManageHook = composeAll
-    [ className =? "MPlayer"        --> doFloat
-    , className =? "Gimp"           --> doFloat
-    , resource  =? "desktop_window" --> doIgnore
-    , resource  =? "kdesktop"       --> doIgnore ]
+myManageHook = composeAll 
+	[ isDialog	--> doCenterFloat
+ 	, isFullscreen	--> doFullFloat
+	, isInClass toFloat	--> doFloat
+	, isInClass toIgnore	--> doIgnore
+	]
+	where
+		isInClass c	=	foldl1 (<||>) [ className =? x | x <- c ]
+		toFloat		=	[ "MPlayer","Gimp","Smplayer","Eog" ]
+		toIgnore	=	[ "stalonetray", "trayer", "Xfce4-notifyd" ]
 
 ------------------------------------------------------------------------
 -- Event handling
@@ -198,7 +231,7 @@ myManageHook = composeAll
 -- return (All True) if the default handler is to be run afterwards. To
 -- combine event hooks use mappend or mconcat from Data.Monoid.
 --
-myEventHook = mempty
+myEventHook = fullscreenEventHook
 
 ------------------------------------------------------------------------
 -- Status bars and logging
@@ -255,10 +288,11 @@ defaults = desktopConfig {
         mouseBindings      = myMouseBindings,
 
       -- hooks, layouts
-        layoutHook         = avoidStruts $ myLayout ||| layoutHook desktopConfig,
+        layoutHook         = avoidStruts $ smartBorders $ myLayout ||| layoutHook desktopConfig,
         manageHook         = 	myManageHook <+> 
 				manageHook desktopConfig <+> 
-				manageDocks,
+				manageDocks <+>
+				fullscreenManageHook,
         handleEventHook    = myEventHook,
  --       logHook            = myLogHook,
         startupHook        = myStartupHook

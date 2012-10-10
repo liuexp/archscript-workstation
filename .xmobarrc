@@ -1,17 +1,16 @@
 Config { font = "xft:WenQuanYi Zen Hei Sharp:pixelsize=13"
        , bgColor = "black"
        , fgColor = "grey"
-       , position = TopW L 92
+       , position = TopW L 91
        , lowerOnStart = True
        , commands = [ Run StdinReader
                     , Run Weather "ZSSS" ["-t","<tempC>C","-L","18","-H","25","--normal","green","--high","red","--low","lightblue"] 36000
-                    , Run Network "eth0" ["-L","0","-H","32","--normal","green","--high","red"] 10
-                    , Run Cpu ["-L","3","-H","50","--normal","green","--high","red"] 10
-                    , Run Memory ["-t","Mem: <usedratio>%"] 10
+                    , Run MultiCpu ["-t","<total>%","-L","3","-H","50","--normal","green","--high","red"] 10
+                    , Run Memory ["-t","<usedratio>%"] 10
                     , Run Com "uname" ["-n"] "" 36000
-		    , Run Date "%a %b %_d %Y %H:%M" "date" 10
+		    , Run Date "%a %b %d %Y %H:%M" "date" 600
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = " %StdinReader%}{ %cpu% %memory% | %eth0%  %ZSSS% | %uname% <fc=#ee9a00>%date%</fc>"
+       , template = " %StdinReader%}{ %mpd% | %memory% %ZSSS% <fc=#ee9a00>%date%</fc> %uname% "
        }
