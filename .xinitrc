@@ -53,19 +53,22 @@ fi
 #
 
  trayer --edge top --align right --SetDockType true --SetPartialStrut true \
-	  --expand true --width 8  --transparent true --tint 0x444444 --alpha 0 --distance 0 --padding 0 --height 17 &
-
+	  --expand true --width 9  --transparent true --tint 0x444444 --alpha 0 --distance 0 --padding 0 --height 19 &
  xsetroot -cursor_name left_ptr
- xloadimage -onroot -fullscreen Desktop/0e2442a7d933c895362fae38d11373f08202001b.jpg
  xscreensaver -no-splash &
  xset -b
  if [ -x /usr/bin/nm-applet ] ; then
     nm-applet --sm-disable &
  fi
- /usr/lib/gnome-settings-daemon/gnome-settings-daemon &
+ nitrogen --restore
+# /usr/lib/gnome-settings-daemon/gnome-settings-daemon &
+/usr/lib/xfce4/notifyd/xfce4-notifyd &
  gnome-sound-applet &
  ibus-daemon -xrd &
+ mpd --kill
+ mpd &
 
  # start xmonad
  exec ck-launch-session dbus-launch --sh-syntax --exit-with-session xmonad
  
+

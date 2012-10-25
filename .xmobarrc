@@ -12,5 +12,5 @@ Config { font = "xft:WenQuanYi Zen Hei Sharp:pixelsize=13"
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = " %StdinReader%}{ %mpd% | %memory% %ZSSS% <fc=#ee9a00>%date%</fc> %uname% "
+       , template = " %StdinReader%}{ %multicpu%: %memory% %ZSSS% <fc=#ee9a00>%date%</fc> %uname% "
        }
