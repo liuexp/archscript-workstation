@@ -32,6 +32,7 @@ Bundle 'Shougo/neocomplcache'
 Bundle 'ujihisa/neco-ghc'
 Bundle 'derekwyatt/vim-scala'
 Bundle 'Lokaltog/vim-powerline'
+Bundle 'mattn/zencoding-vim'
 " Pick either python-mode or pyflakes & pydoc
 Bundle 'klen/python-mode'
 Bundle 'python.vim'
@@ -49,6 +50,16 @@ if filereadable(expand("~/.vim/bundle/snipmate-snippets/snippets/support_functio
     source ~/.vim/bundle/snipmate-snippets/snippets/support_functions.vim
 endif
 
+let g:solarized_termcolors=256
+set t_Co=256
+set background=dark
+if has('gui_running')
+	set background=dark
+else
+	set background=light
+endif
+colorscheme solarized
+
 "vim2hs conceal with unicode
 let g:haskell_conceal_wide = 1
 "nerdtree
@@ -63,6 +74,7 @@ filetype indent on
 
 au BufNewFile,BufRead *.cpp set syntax=cpp11
 au BufNewFile,BufRead *.cpp set foldmethod=syntax
+au BufNewFile,BufRead *.cu set foldmethod=syntax
 au BufNewFile,BufRead *.tex set tabstop=4
 au BufNewFile,BufRead *.tex set softtabstop=4
 au BufNewFile,BufRead *.tex set shiftwidth=4
@@ -101,6 +113,8 @@ if &filetype=="cpp"
 exec "!g++ -std=c++11 % -o %< -g -Wall"
 elseif &filetype=="verilog"
 exec "!iverilog -o %< %"
+elseif &filetype=="cuda"
+exec "!nvcc % -o %<"
 elseif &filetype=="jflex"
 exec "!jflex %"
 elseif &filetype=="haskell"

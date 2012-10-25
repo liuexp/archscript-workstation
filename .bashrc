@@ -5,6 +5,11 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
+ # Workaround for tmux which resets the LANG
+[[ "$LANG" == "C" ]] && export LANG="en_US.utf8"
+
+#export TERM="xterm-256color"
+alias tmux="tmux -2"
 alias l='ls -a'
 alias ll='ls -la'
 alias ls='ls --color=auto'
@@ -19,7 +24,7 @@ alias :gp='git push $*'
 alias :gs='git status -u $*'
 alias :o='xdg-open $*'
 PS1='[\u@\h \W]\$ '
-
+PS1="$PS1"'$([ -n "$TMUX" ] && tmux setenv TMUXPWD_$(tmux display -p "#I_#P") "$PWD")'
 PATH=$PATH:$HOME/.cabal/bin
  #export XMODIFIERS=@im=fcitx
  #export GTK_IM_MODULE=xim
